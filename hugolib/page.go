@@ -113,7 +113,8 @@ type Page struct {
 	Summary         template.HTML
 	TableOfContents template.HTML
 
-	Aliases []string
+	Aliases    []string
+	RawAliases []string
 
 	Images []Image
 	Videos []Video
@@ -1085,6 +1086,13 @@ func (p *Page) update(f interface{}) error {
 				}
 			}
 			p.Params[loki] = p.Aliases
+		case "raw_aliases":
+			p.RawAliases = cast.ToStringSlice(v)
+			for _, alias := range p.RawAliases {
+				if strings.HasPrefix(alias, "http://") || strings.HasPrefix(alias, "https://") {
+					return fmt.Errorf("Only relative aliases are supported, %v provided", alias)
+				}
+			}
 		case "status":
 			p.Status = cast.ToString(v)
 			p.Params[loki] = p.Status

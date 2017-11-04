@@ -1868,3 +1868,40 @@ func BenchmarkParsePage(b *testing.B) {
 		page.ReadFrom(bytes.NewReader(buf.Bytes()))
 	}
 }
+
+func TestRawAlias(t *testing.T) {
+
+	t.Parallel()
+	cfg, fs := newTestCfg()
+
+	pageTitle := "foo"
+	pageRawRenderedTarget := "raw.txt"
+	pageRawContent := "# title\nsome *content*"
+	sourceData := fmt.Sprintf(
+		"---\ntitle: %s\nmarkup: markdown\nraw_aliases:\n  - %s\n---\n%s",
+		pageTitle, pageRawRenderedTarget, pageRawContent,
+	)
+
+	depsCfg := deps.DepsCfg{Fs: fs, Cfg: cfg}
+
+	sources := [][2]string{
+		{filepath.FromSlash("foo.html"), sourceData},
+	}
+	writeSourcesToSource(t, "content", fs, sources...)
+
+	s := buildSingleSite(t, depsCfg, BuildCfg{})
+
+	// Make sure we properly parsed the `raw_aliases:` tag
+	for _, p := range s.Pages {
+		if p.Title() == pageTitle && len(p.RawAliases) != 1 {
+			t.Errorf("%v should contain a single raw alias. State=%v", p, p.RawAliases)
+		}
+	}
+
+	// Now check if the raw document was rendered
+	th := testHelper{s.Cfg, s.Fs, t}
+	renderedRawContent := readDestination(th.T, th.Fs, fmt.Sprintf("public/%s", pageRawRenderedTarget))
+	if renderedRawContent != pageRawContent {
+		t.Errorf("Raw output is not what we expected: %s", renderedRawContent)
+	}
+}

@@ -143,7 +143,8 @@ type Page struct {
 	// Passed to the shortcodes
 	pageWithoutContent *PageWithoutContent
 
-	Aliases []string
+	Aliases    []string
+	RawAliases []string
 
 	Images []Image
 	Videos []Video
@@ -1413,6 +1414,13 @@ func (p *Page) update(frontmatter map[string]interface{}) error {
 				}
 			}
 			p.params[loki] = p.Aliases
+		case "raw_aliases":
+			p.RawAliases = cast.ToStringSlice(v)
+			for _, alias := range p.RawAliases {
+				if strings.HasPrefix(alias, "http://") || strings.HasPrefix(alias, "https://") {
+					return fmt.Errorf("Only relative aliases are supported, %v provided", alias)
+				}
+			}
 		case "status":
 			p.Status = cast.ToString(v)
 			p.params[loki] = p.Status

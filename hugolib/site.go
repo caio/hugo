@@ -1011,7 +1011,6 @@ func (s *Site) render(config *BuildCfg, outFormatIdx int) (err error) {
 			}
 			s.timerStep("render and write aliases")
 		}
-
 	}
 
 	if err = s.renderPages(config); err != nil {
@@ -1039,6 +1038,11 @@ func (s *Site) render(config *BuildCfg, outFormatIdx int) (err error) {
 		return
 	}
 	s.timerStep("render and write 404")
+
+	if err = s.renderRawAliases(); err != nil {
+		return
+	}
+	s.timerStep("render and write raw aliases")
 
 	return
 }

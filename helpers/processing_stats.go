@@ -29,6 +29,7 @@ type ProcessingStats struct {
 	Static          uint64
 	ProcessedImages uint64
 	Files           uint64
+	RawAliases      uint64
 	Aliases         uint64
 	Sitemaps        uint64
 	Cleaned         uint64

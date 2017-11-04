@@ -14,6 +14,7 @@
 package hugolib
 
 import (
+	"bytes"
 	"fmt"
 	"path"
 	"strings"
@@ -394,6 +395,20 @@ func (s *Site) renderRobotsTXT() error {
 
 	return s.renderAndWritePage(&s.PathSpec.ProcessingStats.Pages, "Robots Txt", targetPath, pageOutput, s.appendThemeTemplates(rLayouts)...)
 
+}
+
+func (s *Site) renderRawAliases() error {
+	for _, p := range s.Pages {
+		for _, rawAlias := range p.RawAliases {
+			// XXX validate rawAlias?
+			s.Log.DEBUG.Println("creating raw alias for:", p, "as", rawAlias)
+			err := s.publish(&s.PathSpec.ProcessingStats.RawAliases, rawAlias, bytes.NewBufferString(p.RawContent()))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // renderAliases renders shell pages that simply have a redirect in the header.

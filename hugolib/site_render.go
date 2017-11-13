@@ -313,7 +313,6 @@ func (s *Site) renderSitemap() error {
 	}
 
 	sitemapDefault := parseSitemap(s.Cfg.GetStringMap("sitemap"))
-
 	n := s.newNodePage(kindSitemap)
 
 	// Include all pages (regular, home page, taxonomies etc.)
@@ -323,6 +322,12 @@ func (s *Site) renderSitemap() error {
 		if p.Kind == KindTaxonomyTerm && len(p.Pages) == 0 {
 			continue
 		}
+		pages = append(pages, p)
+	}
+
+	for _, extra := range sitemapDefault.ExtraEntries {
+		p, _ := s.NewPage(extra)
+		p.permalink, _ = s.permalinkForOutputFormat(extra, s.outputFormats[p.Kind][0])
 		pages = append(pages, p)
 	}
 

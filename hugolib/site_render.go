@@ -283,11 +283,16 @@ func (s *Site) renderSitemap() error {
 	}
 
 	sitemapDefault := parseSitemap(s.Cfg.GetStringMap("sitemap"))
-
 	n := s.newNodePage(kindSitemap)
 
 	// Include all pages (regular, home page, taxonomies etc.)
 	pages := s.Pages
+
+	for _, extra := range sitemapDefault.ExtraEntries {
+		p, _ := s.NewPage(extra)
+		p.permalink, _ = s.permalinkForOutputFormat(extra, s.outputFormats[p.Kind][0])
+		pages = append(pages, p)
+	}
 
 	page := s.newNodePage(kindSitemap)
 	page.URLPath.URL = ""

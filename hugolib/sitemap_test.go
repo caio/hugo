@@ -14,6 +14,8 @@
 package hugolib
 
 import (
+	"fmt"
+	"path/filepath"
 	"testing"
 
 	"reflect"
@@ -21,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/gohugoio/hugo/deps"
+	"github.com/gohugoio/hugo/source"
 	"github.com/gohugoio/hugo/tpl"
 )
 
@@ -42,6 +45,30 @@ func TestSitemapOutput(t *testing.T) {
 	}
 }
 
+func TestSitemapExtraEntries(t *testing.T) {
+	t.Parallel()
+	cfg, fs := newTestCfg()
+
+	extraEntries := []string{"bar", "baz", "cv/hue.pdf"}
+	baseURL := "http://auth/bub"
+	cfg.Set("baseURL", baseURL)
+	cfg.Set("sitemap", map[string]interface{}{"extra_entries": extraEntries})
+
+	depsCfg := deps.DepsCfg{Fs: fs, Cfg: cfg}
+
+	sources := []source.ByteSource{
+		{Name: filepath.FromSlash("foo.html"), Content: []byte("---\nmarkup: markdown\n---\n# title\nsome *content*")},
+	}
+	writeSourcesToSource(t, "content", fs, sources...)
+
+	s := buildSingleSite(t, depsCfg, BuildCfg{})
+	th := testHelper{s.Cfg, s.Fs, t}
+
+	sitemap := readDestination(th.T, th.Fs, "public/sitemap.xml")
+	for _, extra := range extraEntries {
+		require.Contains(t, sitemap, fmt.Sprintf("<loc>%s/%s</loc>", baseURL, extra))
+	}
+}
 func doTestSitemapOutput(t *testing.T, internal bool) {
 
 	cfg, fs := newTestCfg()

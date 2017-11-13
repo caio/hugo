@@ -20,9 +20,10 @@ import (
 
 // Sitemap configures the sitemap to be generated.
 type Sitemap struct {
-	ChangeFreq string
-	Priority   float64
-	Filename   string
+	ChangeFreq   string
+	Priority     float64
+	Filename     string
+	ExtraEntries []string
 }
 
 func parseSitemap(input map[string]interface{}) Sitemap {
@@ -36,6 +37,8 @@ func parseSitemap(input map[string]interface{}) Sitemap {
 			sitemap.Priority = cast.ToFloat64(value)
 		case "filename":
 			sitemap.Filename = cast.ToString(value)
+		case "extra_entries":
+			sitemap.ExtraEntries = cast.ToStringSlice(value)
 		default:
 			jww.WARN.Printf("Unknown Sitemap field: %s\n", key)
 		}
